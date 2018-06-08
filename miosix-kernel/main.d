@@ -30,7 +30,7 @@ main.o: main.cpp player.h miosix/miosix.h \
  miosix/stdlib_integration/libstdcpp_integration.h miosix/kernel/error.h \
  miosix/kernel/kernel.h miosix/kernel/sync.h miosix/kernel/queue.h \
  miosix/kernel/error.h miosix/util/util.h miosix/config/miosix_settings.h \
- sad_trombone.h
+ mono.h
 
 player.h:
 
@@ -116,4 +116,4 @@ miosix/util/util.h:
 
 miosix/config/miosix_settings.h:
 
-sad_trombone.h:
+mono.h:
