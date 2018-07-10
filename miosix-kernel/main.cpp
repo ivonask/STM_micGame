@@ -24,7 +24,7 @@
 #include <functional>
 #include <termios.h>
 #include <string.h>
-
+#include "stm32_hardware_rng.h"
 using namespace std;
 using namespace miosix;
 
@@ -66,10 +66,37 @@ void sendInitSignal(int expectedBatchSize){
 
 int main()
 {
+    char players;
+    int requiredFreq;
+    volatile int i=0;
     Microphone& mic = Microphone::instance(); 
     mic.init(bind(calculateFreq,placeholders::_1,placeholders::_2));
+
+    HardwareRng& rng = HardwareRng::instance();
     buttonInit();
     //setRawStdout();
+
+   printf("Enter number of players...");
+   while(1){
+   scanf("%c", &players);
+   if (players == '2' || players == '3' || players == '4')
+	{
+		printf("Ok\n");
+		break;
+	}
+   else if (players != '\n')
+	{
+		printf("Try again...");
+	}
+
+  }
+    printf("Number of player %c\n", players);
+
+    requiredFreq = rng.get() % 4500 + 500; 
+    printf("The required frequency is %d\n", requiredFreq);   
+ 
+   while (i < (int) players - 48)  {
+    printf("Ready for player %d\n...start by pressing the button", i+1);
 
     waitForButton();
     sendInitSignal(mic.getBatchSize());
@@ -81,7 +108,11 @@ int main()
     mic.stop();
     ledOff();
 
-    while (1){
+   i++;
+   }
+   
+   printf("End of the game\n"); 
+   while (1){
     };
     
 }
