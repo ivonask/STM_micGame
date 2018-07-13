@@ -39,7 +39,7 @@ void calculateFreq(unsigned char* compressedData, unsigned int index){
 
     printf("Max index %d\n",index);
 
-   freq = (index * Fs)/ fftSize;
+   freq = (index * Fs)/ (2 * fftSize);
   
    printf("Value of the frequency is %f\n", freq);
  
