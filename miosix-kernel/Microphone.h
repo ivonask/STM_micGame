@@ -67,7 +67,7 @@ public:
      * \param cback the callback function that will be executed (repeatedly) when
      * the driver produces the right number of samples
      */
-    void init(std::function<void (unsigned char *, unsigned int)> cback);
+    void init(std::function<void (unsigned char *, unsigned int, int, int)> cback);
     
     /*
      * Starts the recording. When start() is called the devices configuration
@@ -75,7 +75,7 @@ public:
      * The call is non-blocking, the processing from PDM to PCM and the callbacks
      * are executed in threads.
      */
-    void start();
+    void start(int playerId, int requiredFreq);
     
     /*
      * Wait for the last chunk of PCM samples to be processed, stop the DMA and 
@@ -92,7 +92,7 @@ private:
     Microphone(); // Microphone is a singleton, the constructor is private
     Microphone(const Microphone& orig);
     virtual ~Microphone();
-    std::function<void (unsigned char*, int)> callback;
+    std::function<void (unsigned char*, int, int, int)> callback;
     // the buffers handling the double buffering "callback-side"
     short* readyBuffer;
     short* processingBuffer;
@@ -123,7 +123,8 @@ private:
     float maxValue;
     uint32_t maxIndex;
     arm_cfft_radix4_instance_f32 S;
-
+ 
+    int player, gameFreq;
 };
 
 #endif	/* MICROPHONE_H */

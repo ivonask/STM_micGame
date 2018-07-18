@@ -168,13 +168,13 @@ Microphone& Microphone::instance()
 Microphone::Microphone() {}
 
 
-void Microphone::init(function<void (unsigned char *, unsigned int)> cback){
+void Microphone::init(function<void (unsigned char *, unsigned int, int, int)> cback){
     callback = cback;
     PCMsize = SAMPLES_AT_TIME * DECIMATION_FACTOR;
     fft_buf_size_bytes = (PCMsize/DECIMATION_FACTOR) / 2;
 }
 
-void Microphone::start(){
+void Microphone::start(int playerId, int requiredFreq){
     recording = true;
     readyBuffer = (short*) malloc(sizeof(short) * PCMsize);
     processingBuffer = (short*) malloc(sizeof(short) * PCMsize);
@@ -184,6 +184,8 @@ void Microphone::start(){
 
     fftBuf = (float*) malloc(fft_buf_size_bytes*sizeof(float));
 
+   player = playerId;
+   gameFreq = requiredFreq;
 	//arm_cfft_radix4_init_f32(&S, FFT_SIZE,0,1); //initialize the module,intFlag=0, doBitReverse=1
    {
         FastInterruptDisableLock dLock;
@@ -296,7 +298,7 @@ void Microphone::execCallback() {
             pthread_cond_wait(&cbackExecCond, &bufMutex);
   
 	unsigned char * tmp;
-        callback(tmp,maxIndex);
+        callback(tmp,maxIndex, player, gameFreq);
         isBufferReady = false;
         pthread_mutex_unlock(&bufMutex);
     }
@@ -375,13 +377,14 @@ void Microphone::stop() {
 
     // sends ending signal to desktop script
     // ATTENTION: it's application specific, you might not need it
-    unsigned char * uselessBuffer;
-    callback(uselessBuffer,0);
+    //unsigned char * uselessBuffer;
+    //callback(uselessBuffer,0,player, gameFreq);
     
     free(readyBuffer);
     free(processingBuffer);
     free(decimatedProcessingBuffer);
     free(decimatedReadyBuffer);
+    free(fftBuf);
 }
 
 int Microphone::getBatchSize(){

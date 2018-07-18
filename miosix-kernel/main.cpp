@@ -28,20 +28,29 @@
 using namespace std;
 using namespace miosix;
 
+int winnerFreq = 4500;
+int winner;
 
-void calculateFreq(unsigned char* compressedData, unsigned int index){
+void calculateFreq(unsigned char* compressedData, unsigned int index, int player, int gameFreq){
     // send actual size of the batch
     //write(STDOUT_FILENO,&size,sizeof(int));
     // send the batch of data
    int Fs = 11025;
    int fftSize = 2048;
-   float freq;
+   int freq;
 
-    printf("Max index %d\n",index);
+    //printf("Max index %d\n",index);
 
-   freq = (index * Fs)/ fftSize;
-  
-   printf("Value of the frequency is %f\n", freq);
+   freq = (index * Fs)/ (2*fftSize);
+
+   if (abs(freq - gameFreq) < winnerFreq )
+   {
+      winnerFreq = abs(freq - gameFreq);
+      winner = player;
+      printf("The frequency is %d and the winner freq and player were change into %d and %d.\n", freq, winnerFreq, winner);
+   }	
+ 
+   //printf("Value of the frequency is %d\n", freq);
  
 }
 
@@ -70,11 +79,10 @@ int main()
     int requiredFreq;
     volatile int i=0;
     Microphone& mic = Microphone::instance(); 
-    mic.init(bind(calculateFreq,placeholders::_1,placeholders::_2));
+    mic.init(bind(calculateFreq,placeholders::_1,placeholders::_2, placeholders::_3, placeholders::_4));
 
     HardwareRng& rng = HardwareRng::instance();
     buttonInit();
-    //setRawStdout();
 
    printf("Enter number of players...");
    while(1){
@@ -96,11 +104,11 @@ int main()
     printf("The required frequency is %d\n", requiredFreq);   
  
    while (i < (int) players - 48)  {
-    printf("Ready for player %d\n...start by pressing the button", i+1);
+
+    printf("Ready for player %d...start by pressing the button\n", i+1);
 
     waitForButton();
-    sendInitSignal(mic.getBatchSize());
-    mic.start();
+    mic.start(i+1,requiredFreq);
     ledOn();
 
     // ending procedure
@@ -110,7 +118,8 @@ int main()
 
    i++;
    }
-   
+  
+   printf ("The winner is....%d\n", winner);
    printf("End of the game\n"); 
    while (1){
     };

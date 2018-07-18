@@ -8,6 +8,7 @@ KPATH := miosix
 CONFPATH := $(KPATH)
 include $(CONFPATH)/config/Makefile.inc
 CMSIS_DIR := $(KPATH)/arch/common/CMSIS/Include
+DRIVERS := $(KPATH)/arch/common/drivers
 ##
 ## List here subdirectories which contains makefiles
 ##
@@ -33,7 +34,7 @@ LIBS :=
 ##
 ## List here additional include directories (in the form -Iinclude_dir)
 ##
-INCLUDE_DIRS := -Iadpcm -I$(CMSIS_DIR)
+INCLUDE_DIRS := -Iadpcm -I$(CMSIS_DIR) -I$(DRIVERS)
 
 ##############################################################################
 ## You should not need to modify anything below                             ##
