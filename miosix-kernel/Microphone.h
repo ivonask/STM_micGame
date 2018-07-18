@@ -37,7 +37,6 @@
 
 
 #include "miosix.h"
-#include "codec.h"
 #include <functional>
 
 #include "arm_math.h"
@@ -118,7 +117,6 @@ private:
     float* decimatedProcessingBuffer;
     // FFT data
     float* fftBuf;
-    CodecState state;
     int fft_buf_size_bytes;
     float maxValue;
     uint32_t maxIndex;

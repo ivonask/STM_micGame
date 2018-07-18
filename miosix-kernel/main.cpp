@@ -1,6 +1,6 @@
 /**************************************************************************
  * Copyright (C) 2017 Giovanni Beri                                       *
- *                                                                        *
+ * Edited by: 2018 Ivona Skorjanc and Odri Tomas                          *
  * This program is free software: you can redistribute it and/or modify   *
  * it under the terms of the GNU General Public License as published by   *
  * the Free Software Foundation, either version 3 of the License, or      *
@@ -25,6 +25,7 @@
 #include <termios.h>
 #include <string.h>
 #include "stm32_hardware_rng.h"
+
 using namespace std;
 using namespace miosix;
 
@@ -32,16 +33,12 @@ int winnerFreq = 4500;
 int winner;
 
 void calculateFreq(unsigned char* compressedData, unsigned int index, int player, int gameFreq){
-    // send actual size of the batch
-    //write(STDOUT_FILENO,&size,sizeof(int));
-    // send the batch of data
+
    int Fs = 11025;
    int fftSize = 2048;
    int freq;
 
-    //printf("Max index %d\n",index);
-
-   freq = (index * Fs)/ (2*fftSize);
+   freq = (index * Fs)/ (2*fftSize); //calculate the frequency from the index of the maximal frequency from the FFT analysis
 
    if (abs(freq - gameFreq) < winnerFreq )
    {
@@ -50,43 +47,28 @@ void calculateFreq(unsigned char* compressedData, unsigned int index, int player
       printf("The frequency is %d and the winner freq and player were change into %d and %d.\n", freq, winnerFreq, winner);
    }	
  
-   //printf("Value of the frequency is %d\n", freq);
- 
 }
-
-
-// configure stdout in raw mode
-void setRawStdout(){
-    struct termios t;
-    tcgetattr(STDOUT_FILENO,&t);
-    t.c_lflag &= ~(ISIG | ICANON); 
-    tcsetattr(STDOUT_FILENO,TCSANOW, &t); 
-}
-
-
-void sendInitSignal(int expectedBatchSize){
-    // send signal to desktop script
-    char init[] = "ready\n";
-    write(STDOUT_FILENO,init,strlen(init));
-    // send expected size of the data batches
-    write(STDOUT_FILENO,&expectedBatchSize,sizeof(int));
-}
-
 
 int main()
 {
-    char players;
-    int requiredFreq;
+    char players; //var that stores the number of players in the game
+    int requiredFreq; //var that stored the frequency the players need to produce
     volatile int i=0;
+
+    //microphone insance
     Microphone& mic = Microphone::instance(); 
     mic.init(bind(calculateFreq,placeholders::_1,placeholders::_2, placeholders::_3, placeholders::_4));
 
+    //instance of the hardware random generator
     HardwareRng& rng = HardwareRng::instance();
+    //initialise the user button
     buttonInit();
 
    printf("Enter number of players...");
    while(1){
    scanf("%c", &players);
+
+   //check if the entered number is between 2 and 4 (game specifications)
    if (players == '2' || players == '3' || players == '4')
 	{
 		printf("Ok\n");
@@ -98,25 +80,29 @@ int main()
 	}
 
   }
+
     printf("Number of player %c\n", players);
 
+    //generate random frequency
     requiredFreq = rng.get() % 4500 + 500; 
     printf("The required frequency is %d\n", requiredFreq);   
  
+   //record player sounds and analyse frequency
    while (i < (int) players - 48)  {
 
     printf("Ready for player %d...start by pressing the button\n", i+1);
 
+    //recording starts when the button is pressed
     waitForButton();
     mic.start(i+1,requiredFreq);
     ledOn();
 
-    // ending procedure
+    // recording finishes with the button pressed againe
     waitForButton();
     mic.stop();
     ledOff();
 
-   i++;
+     i++;
    }
   
    printf ("The winner is....%d\n", winner);

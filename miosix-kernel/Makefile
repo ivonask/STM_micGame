@@ -19,7 +19,6 @@ SUBDIRS := $(KPATH)
 ##
 SRC :=									\
 main.cpp Microphone.cpp button.cpp		\
-adpcm/codec.cpp		\
 math_fun/arm_cfft_radix4_init_f32.c	\
 math_fun/arm_cfft_radix4_f32.c	\
 math_fun/arm_cmplx_mag_f32.c	\
@@ -34,7 +33,7 @@ LIBS :=
 ##
 ## List here additional include directories (in the form -Iinclude_dir)
 ##
-INCLUDE_DIRS := -Iadpcm -I$(CMSIS_DIR) -I$(DRIVERS)
+INCLUDE_DIRS := -I$(CMSIS_DIR) -I$(DRIVERS)
 
 ##############################################################################
 ## You should not need to modify anything below                             ##

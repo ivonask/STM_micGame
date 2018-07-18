@@ -22,7 +22,7 @@
 #include "miosix/kernel/scheduler/scheduler.h"
 #include "util/software_i2c.h"
 #include "Microphone.h"
-#include "codec.h"
+
 // it keeps only 1/DECIMATION_FACTOR of audio samples
 #define DECIMATION_FACTOR 4
 // number of samples to be processed at time
@@ -178,15 +178,16 @@ void Microphone::start(int playerId, int requiredFreq){
     recording = true;
     readyBuffer = (short*) malloc(sizeof(short) * PCMsize);
     processingBuffer = (short*) malloc(sizeof(short) * PCMsize);
-    // here I put 1 sample every DECIMATION_FACTOR - 1 samples
+   
+     // here I put 1 sample every DECIMATION_FACTOR - 1 samples
     decimatedReadyBuffer = (float*) malloc(sizeof(float) * PCMsize / DECIMATION_FACTOR);
     decimatedProcessingBuffer = (float*) malloc(sizeof(float) * PCMsize / DECIMATION_FACTOR);
 
     fftBuf = (float*) malloc(fft_buf_size_bytes*sizeof(float));
 
-   player = playerId;
-   gameFreq = requiredFreq;
-	//arm_cfft_radix4_init_f32(&S, FFT_SIZE,0,1); //initialize the module,intFlag=0, doBitReverse=1
+    player = playerId;
+    gameFreq = requiredFreq;
+
    {
         FastInterruptDisableLock dLock;
         //Enable DMA1 and SPI2/I2S2 and GPIOB and GPIOC
@@ -235,9 +236,11 @@ void Microphone::mainLoop(){
     pthread_t cback;
     bq=new BufferQueue<unsigned short,bufferSize,bufNum>();
     NVIC_EnableIRQ(DMA1_Stream3_IRQn);  
+ 
     // create the thread that will execute the callbacks 
     pthread_create(&cback,NULL,callbackLauncher,reinterpret_cast<void*>(this));
     isBufferReady = false;
+    
     // variable used for swap of processing and ready buffer
     short *tmp;
     float  *decimatedTmp;
@@ -264,8 +267,8 @@ void Microphone::mainLoop(){
 
         readyBuffer = processingBuffer;
         decimatedReadyBuffer = decimatedProcessingBuffer;
-        // perform encoding using ADPCM codec
-        //encode(&state, decimatedReadyBuffer, PCMsize/DECIMATION_FACTOR, compressedBuf);
+       
+
 	//Perform FFT
 	arm_cfft_radix4_init_f32(&S, FFT_SIZE,0,1); //initialize the module,intFlag=0, doBitReverse=1        
 	arm_cfft_radix4_f32(&S,decimatedReadyBuffer);//proces the data through the module
@@ -278,6 +281,7 @@ void Microphone::mainLoop(){
         isBufferReady = true;
         pthread_cond_broadcast(&cbackExecCond);
         pthread_mutex_unlock(&bufMutex);
+      
         // end critical section
         processingBuffer = tmp;
         decimatedProcessingBuffer = decimatedTmp; //dodan decimated
@@ -374,12 +378,7 @@ void Microphone::stop() {
     FastInterruptDisableLock dLock;
         RCC->CR &= ~RCC_CR_PLLI2SON;
     }
-
-    // sends ending signal to desktop script
-    // ATTENTION: it's application specific, you might not need it
-    //unsigned char * uselessBuffer;
-    //callback(uselessBuffer,0,player, gameFreq);
-    
+   
     free(readyBuffer);
     free(processingBuffer);
     free(decimatedProcessingBuffer);
