@@ -1,6 +1,6 @@
 # STM_micGame
 
-State of the project: at the beginning
+State of the project: delivered
 
 This is a repository for the Advanced Operating Systems course at Politecnico di Milano, for the academic year 2017./2018.
 
