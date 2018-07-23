@@ -362,8 +362,8 @@ unsigned short Microphone::PDMFilter(const unsigned short* PDMBuffer, unsigned i
     
 }
 
-Microphone::Microphone(const Microphone& orig) {
-}
+/*Microphone::Microphone(const Microphone& orig) {
+}*/
 
 void Microphone::stop() {
     // stop the software
